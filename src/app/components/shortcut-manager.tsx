@@ -196,9 +196,9 @@ export function ShortcutManager() {
               onChange={handleTestInputChange}
               className="h-16 border-2 border-white rounded-xl bg-white text-gray-900 placeholder:text-gray-500 focus:ring-offset-0 focus:ring-0"
             />
-            <div className="mt-2 p-4 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 min-h-[4rem] flex items-center">
+            <pre className="h-24 border-2 border-white rounded-xl bg-white text-gray-900 p-4 whitespace-pre-wrap overflow-auto">
               {testOutput || "Output will appear here..."}
-            </div>
+            </pre>
           </div>
 
           {shortcuts.length > 0 && (
