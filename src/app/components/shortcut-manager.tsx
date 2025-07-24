@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,16 @@ export function ShortcutManager() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Function to convert Markdown-like bold (**text**) to HTML <strong>
+  const renderContent = useCallback((markdown: string) => {
+    // Replace **text** with <strong>text</strong>
+    // This regex handles cases where ** might be at the start/end of a line or word
+    const html = markdown.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    return html;
+  }, []);
 
   // Load shortcuts from localStorage on component mount
   useEffect(() => {
@@ -120,6 +130,58 @@ export function ShortcutManager() {
     }
   }, []);
 
+  // Handle Ctrl+B / Cmd+B for bold formatting
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+        e.preventDefault(); // Prevent browser default bold action
+
+        const textarea = contentTextareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = shortcutContent.substring(start, end);
+
+        let newContent: string;
+        let newCursorPos: number;
+
+        // Check if selected text is already bold
+        if (selectedText.startsWith("**") && selectedText.endsWith("**")) {
+          // Remove bold
+          newContent =
+            shortcutContent.substring(0, start) +
+            selectedText.substring(2, selectedText.length - 2) +
+            shortcutContent.substring(end);
+          newCursorPos = start + selectedText.length - 4; // Adjust cursor for removed **
+        } else {
+          // Add bold
+          newContent =
+            shortcutContent.substring(0, start) +
+            "**" +
+            selectedText +
+            "**" +
+            shortcutContent.substring(end);
+          newCursorPos = start + selectedText.length + 2; // Adjust cursor for added **
+        }
+
+        setShortcutContent(newContent);
+
+        // Restore selection/cursor position after state update
+        // This needs to be done after the state has updated, so often requires a setTimeout
+        // or using a ref callback if not using a controlled component.
+        // For simplicity, we'll use a small timeout here.
+        setTimeout(() => {
+          if (textarea) {
+            textarea.selectionStart = newCursorPos;
+            textarea.selectionEnd = newCursorPos;
+          }
+        }, 0);
+      }
+    },
+    [shortcutContent]
+  );
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-8">
       <Card className="w-full max-w-3xl border-2 border-white rounded-3xl p-8 space-y-8 bg-[#e9ecef] text-gray-900">
@@ -169,9 +231,11 @@ export function ShortcutManager() {
             </Label>
             <Textarea
               id="shortcutContent"
+              ref={contentTextareaRef}
               placeholder="Write the content the shortcut should contain"
               value={shortcutContent}
               onChange={(e) => setShortcutContent(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="h-24 border-2 border-white rounded-xl bg-white text-gray-900 placeholder:text-gray-300 focus:ring-offset-0 focus:ring-0 resize-y"
             />
           </div>
