@@ -5,6 +5,7 @@ import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -68,7 +69,7 @@ export function ShortcutManager() {
       const updatedShortcuts = [...shortcuts];
       updatedShortcuts[existingShortcutIndex] = {
         name: shortcutName.trim(),
-        content: shortcutContent.trim(),
+        content: shortcutContent,
       };
       setShortcuts(updatedShortcuts);
       setMessage({
@@ -79,7 +80,7 @@ export function ShortcutManager() {
       // Add new shortcut
       setShortcuts((prev) => [
         ...prev,
-        { name: shortcutName.trim(), content: shortcutContent.trim() },
+        { name: shortcutName.trim(), content: shortcutContent },
       ]);
       setMessage({
         type: "success",
@@ -90,7 +91,7 @@ export function ShortcutManager() {
     // Clear input fields
     setShortcutName("");
     setShortcutContent("");
-    setTimeout(() => setMessage(null), 3000); // Clear message after 3 seconds
+    setTimeout(() => setMessage(null), 2000); // Clear message after 3 seconds
   }, [shortcutName, shortcutContent, shortcuts]);
 
   const handleTestInputChange = useCallback(
@@ -166,12 +167,12 @@ export function ShortcutManager() {
             <Label htmlFor="shortcutContent" className="text-gray-800">
               Shortcut Contain
             </Label>
-            <Input
+            <Textarea
               id="shortcutContent"
               placeholder="Write the content the shortcut should contain"
               value={shortcutContent}
               onChange={(e) => setShortcutContent(e.target.value)}
-              className="h-24 border-2 border-white rounded-xl bg-white text-gray-900 placeholder:text-gray-500 focus:ring-offset-0 focus:ring-0"
+              className="h-24 border-2 border-white rounded-xl bg-white text-gray-900 placeholder:text-gray-300 focus:ring-offset-0 focus:ring-0 resize-y"
             />
           </div>
 
